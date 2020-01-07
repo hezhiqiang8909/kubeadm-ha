@@ -1,0 +1,22 @@
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Unit]
+After=docker.service
+{% if (system_reserved_enabled is defined and system_reserved_enabled) or (kube_reserved_enabled is defined and kube_reserved_enabled) %}
+[Service]
+{% if system_reserved_enabled is defined and system_reserved_enabled %}
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/cpu,cpuacct/system.slice
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/memory/system.slice
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/systemd/system.slice
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/pids/system.slice
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/cpuset/system.slice
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/hugetlb/system.slice
+{% endif %}
+{% if kube_reserved_enabled is defined and kube_reserved_enabled %}
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/cpu,cpuacct/kubelet.service.slice 
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/memory/kubelet.service.slice 
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/systemd/kubelet.service.slice 
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/pids/kubelet.service.slice 
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/cpuset/kubelet.service.slice
+ExecStartPre=/bin/mkdir -p /sys/fs/cgroup/hugetlb/kubelet.service.slice
+{% endif %}
+{% endif %}

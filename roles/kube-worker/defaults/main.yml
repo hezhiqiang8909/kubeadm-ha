@@ -32,10 +32,12 @@ eviction_hard_memory_available: 100Mi
 eviction_hard_nodefs_available: 10%
 eviction_hard_nodefs_inodes_free: 5%
 
-# kubernetes组件预留资源
-kube_cpu_reserved: 100m
-kube_memory_reserved: 256M
-kube_ephemeral_storage_reserved: 1G
+# # kubernetes组件预留资源
+# kube_reserved_enabled: true
+# # 取消注释以覆盖默认值
+# kube_cpu_reserved: 100m
+# kube_memory_reserved: 256M
+# kube_ephemeral_storage_reserved: 1G
 
 # # 操作系统守护进程预留资源
 # system_reserved_enabled: true
@@ -43,6 +45,9 @@ kube_ephemeral_storage_reserved: 1G
 # system_cpu_reserved: 500m
 # system_memory_reserved: 512M
 # system_ephemeral_storage_reserved: 10G
+
+# 用于 DNS 继承
+kube_resolv_conf: "/etc/resolv.conf"
 
 # kubernetes各组件镜像仓库前缀
 kube_image_repository: gcr.azk8s.cn/google_containers

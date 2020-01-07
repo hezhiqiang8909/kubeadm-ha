@@ -31,6 +31,12 @@ enableControllerAttachDetach: true
 enableDebuggingHandlers: true
 enforceNodeAllocatable:
 - pods
+{% if kube_reserved_enabled is defined and kube_reserved_enabled %}
+- kube-reserved
+{% endif %}
+{% if system_reserved_enabled is defined and system_reserved_enabled %}
+- system-reserved
+{% endif %}
 eventBurst: 10
 eventRecordQPS: 5
 evictionHard:
@@ -38,14 +44,19 @@ evictionHard:
   memory.available: {{ eviction_hard_memory_available }}
   nodefs.available: {{ eviction_hard_nodefs_available }}
   nodefs.inodesFree: {{ eviction_hard_nodefs_inodes_free }}
+{% if kube_reserved_enabled is defined and kube_reserved_enabled %}
+kubeReservedCgroup: /kubelet.service
 kubeReserved:
-  cpu: {{ kube_cpu_reserved }}
-  memory: {{ kube_memory_reserved|regex_replace('Mi', 'M') }}
+  cpu: {{ kube_cpu_reserved|default('100m') }}
+  memory: {{ kube_memory_reserved|default('256M')|regex_replace('Mi', 'M') }}
+  ephemeral-storage: {{ system_ephemeral_storage_reserved|default('1G')|regex_replace('Gi', 'G') }}
+{% endif %}
 {% if system_reserved_enabled is defined and system_reserved_enabled %}
+systemReservedCgroup: /system
 systemReserved:
   cpu: {{ system_cpu_reserved|default('500m') }}
   memory: {{ system_memory_reserved|default('512M')|regex_replace('Mi', 'M') }}
-  ephemeral-storage: {{ system_ephemeral_storage_reserved|default('10Gi')|regex_replace('Gi', 'G') }}
+  ephemeral-storage: {{ system_ephemeral_storage_reserved|default('10G')|regex_replace('Gi', 'G') }}
 {% endif %}
 evictionPressureTransitionPeriod: 5m0s
 failSwapOn: true
@@ -72,7 +83,7 @@ podPidsLimit: -1
 port: 10250
 registryBurst: 10
 registryPullQPS: 5
-resolvConf: /etc/resolv.conf
+resolvConf: {{ kube_resolv_conf }}
 rotateCertificates: true
 runtimeRequestTimeout: 2m0s
 serializeImagePulls: true

@@ -12,6 +12,18 @@
     path: /etc/kubernetes/kubelet.conf
   register: kubelet_conf_stat
 
+- name: 生成 kubelet systemd init 文件
+  template: 
+    src: 20-kubelet-override.conf.j2
+    dest: /etc/systemd/system/kubelet.service.d/20-kubelet-override.conf
+    owner: root
+    mode: 0644
+  register: kubelet_systemd_init_result
+- name: 重新加载 daemon
+  systemd:
+    daemon_reload: yes
+  when: kubelet_systemd_init_result.changed
+
 - include_tasks: "{{ (role_path + '/../kube-master/install/tasks/kubeadm-config.yml') | realpath  }}"
   when: 
   - inventory_hostname in (groups['kube-worker'] + groups['new-worker'])
@@ -47,7 +59,7 @@
     name: kubelet
     state: restarted
     enabled: yes
-  when: configuration_result.changed
+  when: kubelet_systemd_init_result.changed or configuration_result.changed
 
 - name: 取消在 worker 组的 master 节点 taint，使 master 节点可以调度
   shell: >
